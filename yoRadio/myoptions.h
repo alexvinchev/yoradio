@@ -11,11 +11,11 @@
 
 /* !!! Do not be alarmed, all right, the default values ​​are not included in this file !!! */
 
-#define DSP_MODEL			DSP_SSD1306
-#define ENC_BTNR			35
-#define ENC_BTNL			33
-#define ENC_BTNB			32
-#define ENC_INTERNALPULLUP			false
+#define DSP_MODEL                   DSP_SSD1306
+#define ENC_BTNR                    35
+#define ENC_BTNL                    33
+#define ENC_BTNB                    32
+#define ENC_INTERNALPULLUP          false
 
 
 #endif
