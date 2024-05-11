@@ -12,9 +12,9 @@
  *
  */
 #include "AudioEx.h"
-#include "mp3_decoder/mp3_decoder.h"
 #include "aac_decoder/aac_decoder.h"
 #include "flac_decoder/flac_decoder.h"
+#include "mp3_decoder/mp3_decoder.h"
 #include "../core/config.h"
 
 #ifdef SDFATFS_USED
@@ -26,24 +26,22 @@ fs::SDFATFS SD_SDFAT;
 #ifndef DMA_BUFLEN
   #define DMA_BUFLEN  512   //  (512)
 #endif
-//---------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 AudioBuffer::AudioBuffer(size_t maxBlockSize) {
     // if maxBlockSize isn't set use defaultspace (1600 bytes) is enough for aac and mp3 player
-    if(maxBlockSize) m_resBuffSizeRAM  = maxBlockSize;
+    if(maxBlockSize) m_resBuffSizeRAM = maxBlockSize;
     if(maxBlockSize) m_maxBlockSize = maxBlockSize;
 }
 
 AudioBuffer::~AudioBuffer() {
-    if(m_buffer)
-        free(m_buffer);
+    if(m_buffer) free(m_buffer);
     m_buffer = NULL;
 }
 
 void AudioBuffer::setBufsize(int ram, int psram) {
-    if (ram > -1) // -1 == default / no change
+    if(ram > -1) // -1 == default / no change
         m_buffSizeRAM = ram;
-    if (psram > -1)
-        m_buffSizePSRAM = psram;
+    if(psram > -1) m_buffSizePSRAM = psram;
 }
 
 size_t AudioBuffer::init() {
@@ -53,7 +51,7 @@ size_t AudioBuffer::init() {
         // PSRAM found, AudioBuffer will be allocated in PSRAM
         m_f_psram = true;
         m_buffSize = m_buffSizePSRAM;
-        m_buffer = (uint8_t*) ps_calloc(m_buffSize, sizeof(uint8_t));
+        m_buffer = (uint8_t*)ps_calloc(m_buffSize, sizeof(uint8_t));
         m_buffSize = m_buffSizePSRAM - m_resBuffSizePSRAM;
     }
     if(m_buffer == NULL) {
@@ -63,63 +61,48 @@ size_t AudioBuffer::init() {
         m_buffer = (uint8_t*) calloc(m_buffSize, sizeof(uint8_t));
         m_buffSize = m_buffSizeRAM - m_resBuffSizeRAM;
     }
-    if(!m_buffer)
-        return 0;
+    if(!m_buffer) return 0;
     m_f_init = true;
     resetBuffer();
     return m_buffSize;
 }
 
-void AudioBuffer::changeMaxBlockSize(uint16_t mbs){
+void AudioBuffer::changeMaxBlockSize(uint16_t mbs) {
     m_maxBlockSize = mbs;
     return;
 }
 
-uint16_t AudioBuffer::getMaxBlockSize(){
-    return m_maxBlockSize;
-}
+uint16_t AudioBuffer::getMaxBlockSize() { return m_maxBlockSize; }
 
 size_t AudioBuffer::freeSpace() {
-    if(m_readPtr >= m_writePtr) {
-        m_freeSpace = (m_readPtr - m_writePtr);
-    } else {
-        m_freeSpace = (m_endPtr - m_writePtr) + (m_readPtr - m_buffer);
-    }
-    if(m_f_start)
-        m_freeSpace = m_buffSize;
+    if(m_readPtr >= m_writePtr) { m_freeSpace = (m_readPtr - m_writePtr); }
+    else { m_freeSpace = (m_endPtr - m_writePtr) + (m_readPtr - m_buffer); }
+    if(m_f_start) m_freeSpace = m_buffSize;
     return m_freeSpace - 1;
 }
 
 size_t AudioBuffer::writeSpace() {
     if(m_readPtr >= m_writePtr) {
         m_writeSpace = (m_readPtr - m_writePtr - 1); // readPtr must not be overtaken
-    } else {
-        if(getReadPos() == 0)
-            m_writeSpace = (m_endPtr - m_writePtr - 1);
-        else
-            m_writeSpace = (m_endPtr - m_writePtr);
     }
-    if(m_f_start)
-        m_writeSpace = m_buffSize - 1;
+    else {
+        if(getReadPos() == 0) m_writeSpace = (m_endPtr - m_writePtr - 1);
+        else m_writeSpace = (m_endPtr - m_writePtr);
+    }
+    if(m_f_start) m_writeSpace = m_buffSize - 1;
     return m_writeSpace;
 }
 
 size_t AudioBuffer::bufferFilled() {
-    if(m_writePtr >= m_readPtr) {
-        m_dataLength = (m_writePtr - m_readPtr);
-    } else {
-        m_dataLength = (m_endPtr - m_readPtr) + (m_writePtr - m_buffer);
-    }
+    if(m_writePtr >= m_readPtr) { m_dataLength = (m_writePtr - m_readPtr); }
+    else { m_dataLength = (m_endPtr - m_readPtr) + (m_writePtr - m_buffer); }
     return m_dataLength;
 }
 
 void AudioBuffer::bytesWritten(size_t bw) {
     m_writePtr += bw;
-    if(m_writePtr == m_endPtr) {
-        m_writePtr = m_buffer;
-    }
-    if(bw && m_f_start)
-        m_f_start = false;
+    if(m_writePtr == m_endPtr) { m_writePtr = m_buffer; }
+    if(bw && m_f_start) m_f_start = false;
 }
 
 void AudioBuffer::bytesWasRead(size_t br) {
@@ -130,14 +113,12 @@ void AudioBuffer::bytesWasRead(size_t br) {
     }
 }
 
-uint8_t* AudioBuffer::getWritePtr() {
-    return m_writePtr;
-}
+uint8_t* AudioBuffer::getWritePtr() { return m_writePtr; }
 
 uint8_t* AudioBuffer::getReadPtr() {
     size_t len = m_endPtr - m_readPtr;
-    if(len < m_maxBlockSize) { // be sure the last frame is completed
-        memcpy(m_endPtr, m_buffer, m_maxBlockSize - len);  // cpy from m_buffer to m_endPtr with len
+    if(len < m_maxBlockSize) {                            // be sure the last frame is completed
+        memcpy(m_endPtr, m_buffer, m_maxBlockSize - len); // cpy from m_buffer to m_endPtr with len
     }
     return m_readPtr;
 }
@@ -150,14 +131,11 @@ void AudioBuffer::resetBuffer() {
     // memset(m_buffer, 0, m_buffSize); //Clear Inputbuffer
 }
 
-uint32_t AudioBuffer::getWritePos() {
-    return m_writePtr - m_buffer;
-}
+uint32_t AudioBuffer::getWritePos() { return m_writePtr - m_buffer; }
 
-uint32_t AudioBuffer::getReadPos() {
-    return m_readPtr - m_buffer;
-}
-//---------------------------------------------------------------------------------------------------------------------
+uint32_t AudioBuffer::getReadPos() { return m_readPtr - m_buffer; }
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// clang-format off
 Audio::Audio(bool internalDAC /* = false */, uint8_t channelEnabled /* = I2S_DAC_CHANNEL_BOTH_EN */, uint8_t i2sPort) {
 
     //    build-in-DAC works only with ESP32 (ESP32-S3 has no build-in-DAC)
@@ -2343,7 +2321,7 @@ bool Audio::playChunk() {
     int16_t sample[2];
     /* VU Meter ************************************************************************************************************/
     /* По мотивам https://github.com/schreibfaul1/ESP32-audioI2S/pull/170/commits/6cce84217e5bc8f2f8925936affc84576932a29b */
-    uint8_t maxl = 0, maxr = 0; 
+    uint8_t maxl = 0, maxr = 0;
     uint8_t minl = 0xFF, minr = 0xFF;
     /************************************************************************************************************ VU Meter */
     if(getBitsPerSample() == 8) {
