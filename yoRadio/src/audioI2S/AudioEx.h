@@ -480,7 +480,7 @@ private:
     static const uint8_t m_tsPacketSize  = 188;
     static const uint8_t m_tsHeaderSize  = 4;
 
-    char            chbuf[512 + 128];               // must be greater than m_lastHost #254
+    char            m_chbuf[512 + 128];             // must be greater than m_lastHost #254
     char            m_lastHost[512];                // Store the last URL to a webstream
     char*           m_playlistBuff = NULL;          // stores playlistdata
     const uint16_t  m_plsBuffEntryLen = 256;        // length of each entry in playlistBuff
