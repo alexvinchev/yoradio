@@ -12,8 +12,8 @@
 /* !!! Do not be alarmed, all right, the default values ​​are not included in this file !!! */
 
 #define DSP_MODEL			DSP_SSD1306
-#define ENC_BTNR			36
-#define ENC_BTNL			39
+#define ENC_BTNR			39
+#define ENC_BTNL			36
 #define ENC_BTNB			34
 #define ENC_INTERNALPULLUP			false
 
