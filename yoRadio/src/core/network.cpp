@@ -6,6 +6,7 @@
 #include "netserver.h"
 #include "player.h"
 #include "mqtt.h"
+#include <esp_wifi.h>
 
 #ifndef WIFI_ATTEMPTS
 	#define WIFI_ATTEMPTS	16
@@ -117,6 +118,7 @@ bool Network::wifiBegin(bool silent){
       Serial.print("##[BOOT]#\t");
       display.putRequest(BOOTSTRING, ls);
     }
+    esp_wifi_set_ps(WIFI_PS_NONE);
     WiFi.begin(config.ssids[ls].ssid, config.ssids[ls].password);
     while (WiFi.status() != WL_CONNECTED) {
       if(!silent) Serial.print(".");
